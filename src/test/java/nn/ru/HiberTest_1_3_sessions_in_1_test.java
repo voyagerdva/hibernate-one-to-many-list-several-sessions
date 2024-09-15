@@ -14,7 +14,6 @@ public class HiberTest_1_3_sessions_in_1_test {
     private Session session;
     private Transaction transaction;
 
-    // Выполняется один раз перед всеми тестами
     @BeforeAll
     static void setUpAll() {
         Configuration configuration = new Configuration().configure();
@@ -24,18 +23,14 @@ public class HiberTest_1_3_sessions_in_1_test {
         sessionFactory = configuration.buildSessionFactory();
     }
 
-    // Выполняется перед каждым тестом для открытия сессии и транзакции
     @BeforeEach
     void setUp() {
         session = sessionFactory.openSession();
         transaction = session.beginTransaction();
-
-        // Создание таблиц перед тестом
         truncateTables();
     }
 
 
-    // Выполняется после каждого теста для завершения транзакции, удаления таблиц и закрытия сессии
     @AfterEach
     void tearDown() {
 
@@ -53,7 +48,6 @@ public class HiberTest_1_3_sessions_in_1_test {
             transaction.commit();
         }
 
-        // Удаление таблиц после теста
         Transaction transaction = session.beginTransaction();
         truncateTables();
         transaction.commit();
@@ -121,21 +115,8 @@ public class HiberTest_1_3_sessions_in_1_test {
         session3.close();
 
 
-
-
-//        Doc doc1 = session.get(Doc.class, 1L);
-//        Doc doc2 = session.get(Doc.class, 2L);
-//        Dir dir = session.get(Dir.class, 7L);
-//        dir.addDocToItem(doc1);
-//        dir.addDocToItem(doc2);
-//        session.save(dir);
-//        System.out.println(dir);
-
-
-
-
-        // можно, конечно, использовать поля класса - session, transaction, но хочется для наглядности
-        // ввести session3, transaction2 - новые локальные имена внутри метода, чтобы видно было
+        // можно, конечно, переиспользовать поля класса - session, transaction - для новых сессии и транзакции,
+        // но хочется для наглядности ввести session3, transaction2 - новые локальные имена внутри метода, чтобы видно было
         // как перекидывается контекст между одной и второй сессиями, транзакциями и кто в какой момент
         // еще открыт, кто где требует закрытия и т.д.
 
@@ -144,62 +125,6 @@ public class HiberTest_1_3_sessions_in_1_test {
 
 // ------------------------------------------------------
 
-    @Test
-    void test_add_2docs_and_get() {
-        Doc doc1 = session.get(Doc.class, 1L);
-        Doc doc2 = session.get(Doc.class, 2L);
-
-        Dir dir = session.get(Dir.class, 7L);
-
-        System.out.println("\n\n\n\n\n\n\n==================");
-        System.out.println("\n" + doc1 + "\n" + doc2);
-        System.out.println("\n\n" + dir);
-        System.out.println("\n==================\n\n\n\n\n\n\n");
-    }
-
-    @Test
-    void test_add_2docs_and_update() {
-        Doc doc1 = session.get(Doc.class, 1L);
-        Doc doc2 = session.get(Doc.class, 2L);
-
-        Dir dir = session.get(Dir.class, 7L);
-
-
-        dir.addDocToItem(doc1);
-        dir.addDocToItem(doc2);
-
-        session.save(dir);
-
-        System.out.println(dir);
-    }
-
-    @Test
-    void test_delete_doc1() {
-        Doc doc1 = session.get(Doc.class, 2L);
-        session.delete(doc1);
-
-        Dir dir = session.get(Dir.class, 7L);
-        System.out.println(dir);
-    }
-
-    @Test
-    void test_delete_doc1_doc2() {
-        Doc doc1 = session.get(Doc.class, 3L);
-        Doc doc2 = session.get(Doc.class, 4L);
-
-        session.delete(doc1);
-        session.delete(doc2);
-
-        Dir dir = session.get(Dir.class, 7L);
-
-        System.out.println(dir);
-    }
-
-    @Test
-    void test_delete_dir() {
-        Dir dir = session.get(Dir.class, 11L);
-        session.delete(dir);
-    }
 
 
 
