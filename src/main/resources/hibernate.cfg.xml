@@ -1,0 +1,33 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Database connection settings -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5438/db_docs_items_groups</property>
+
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">pass</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQL10Dialect</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+        <property name="hibernate.use_sql_comments">true</property>
+
+        <!-- &lt;!&ndash; Drop and re-create the database schema on startup &ndash;&gt;-->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Use the C3P0 connection pool provider -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+
+        <!-- Annotated entity classes -->
+        <mapping class="nn.ru.entity.Dir"/>
+        <mapping class="nn.ru.entity.Doc"/>
+    </session-factory>
+</hibernate-configuration>
