@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
 import org.junit.jupiter.api.*;
 
 
@@ -69,7 +70,7 @@ public class HiberTest_1_3_sessions_in_1_test {
 // ------------------------------------------------------------
 
     @Test
-    void test_add_2docs_save_get() {
+    void test_add_2docs_save_get_update() {
 
         Dir dir = new Dir();
 
@@ -82,7 +83,7 @@ public class HiberTest_1_3_sessions_in_1_test {
         transaction.commit();
         session.close();
 
-        // 2-ая сессия - для вычитывания:
+        // ---------- 2-ая сессия - для вычитывания: ----------------------
         Session session2 = sessionFactory.openSession();
         Transaction transaction2 = session2.beginTransaction();
 
@@ -92,7 +93,7 @@ public class HiberTest_1_3_sessions_in_1_test {
         transaction2.commit();
         session2.close();
 
-        // 3-ая сессия - для апдейта:
+        // ----------  3-ая сессия - для апдейта: ----------------------
         Session session3 = sessionFactory.openSession();
         Transaction transaction3 = session3.beginTransaction();
 
@@ -111,6 +112,7 @@ public class HiberTest_1_3_sessions_in_1_test {
 
         session3.update(dir3);
 
+
         transaction3.commit();
         session3.close();
 
@@ -123,7 +125,30 @@ public class HiberTest_1_3_sessions_in_1_test {
 
     }
 
-// ------------------------------------------------------
+
+    @Test
+    void test_add_100000docs_save_get_update() {
+
+        DocService docService = new DocService(sessionFactory);
+
+        Dir dir = new Dir();
+        session.save(dir);
+
+        transaction.commit();
+        session.close();
+
+        // Вставляем 100,000 записей через generate_series
+        docService.insertDocsWithGenerateSeries(dir.getId());
+
+
+        // можно, конечно, переиспользовать поля класса - session, transaction - для новых сессии и транзакции,
+        // но хочется для наглядности ввести session3, transaction2 - новые локальные имена внутри метода, чтобы видно было
+        // как перекидывается контекст между одной и второй сессиями, транзакциями и кто в какой момент
+        // еще открыт, кто где требует закрытия и т.д.
+
+
+    }
+
 
 
 
