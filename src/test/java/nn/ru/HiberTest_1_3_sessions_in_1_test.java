@@ -65,6 +65,16 @@ public class HiberTest_1_3_sessions_in_1_test {
         String truncateDocTable = "truncate docs CASCADE"; // Внешний ключ с каскадным удалением
         session.createNativeQuery(truncateDocTable).executeUpdate();
         session.createNativeQuery(truncateItemTable).executeUpdate();
+
+        // Сброс автоинкремента для таблицы docs
+        String resetDocIdSequence = "ALTER SEQUENCE docs_id_seq RESTART WITH 1";
+
+        // Сброс автоинкремента для таблицы dirs
+        String resetDirIdSequence = "ALTER SEQUENCE dirs_id_seq RESTART WITH 1";
+
+        // Выполнение очистки и сброса последовательностей
+        session.createNativeQuery(resetDocIdSequence).executeUpdate();
+        session.createNativeQuery(resetDirIdSequence).executeUpdate();
     }
 
 // ------------------------------------------------------------
@@ -140,6 +150,70 @@ public class HiberTest_1_3_sessions_in_1_test {
         // Вставляем 100,000 записей через generate_series
         docService.insertDocsWithGenerateSeries(dir.getId());
 
+        // ---------- 2-ая сессия - для вычитывания: ----------------------
+        Session session2 = sessionFactory.openSession();
+        Transaction transaction2 = session2.beginTransaction();
+
+        Dir dir2 = session2.get(Dir.class, dir.getId());
+        System.out.println(dir2.getDocs().get(99997));
+        transaction2.commit();
+        session2.close();
+
+        // ----------  3-ая сессия - для апдейта: ----------------------
+        Session session3 = sessionFactory.openSession();
+        Transaction transaction3 = session3.beginTransaction();
+
+        Dir dir3 = session3.get(Dir.class, dir2.getId());
+        System.out.println();
+        Doc oldDoc = dir3.getDocs().get(99997);
+        System.out.println();
+
+        Long idDocForDelete = null;
+
+        for (Doc doc : dir3.getDocs()) {
+            if (doc == oldDoc) {
+                oldDoc.setTitle("Street");
+                doc = oldDoc;
+                idDocForDelete = doc.getId();
+                System.out.println(idDocForDelete);
+            }
+        }
+
+        session3.update(dir3);
+
+
+        transaction3.commit();
+        session3.close();
+
+
+        // ----------  4-ая сессия - для delete doc[99997] : ----------------------
+        Session session4 = sessionFactory.openSession();
+        Transaction transaction4 = session4.beginTransaction();
+
+        Dir dir4 = session4.get(Dir.class, dir2.getId());
+        System.out.println(dir4.getDocs());
+        Doc docForDelete = session4.get(Doc.class, idDocForDelete);
+
+        // Удалить doc из коллекции
+        dir4.getDocs().remove(docForDelete);
+        session4.delete(docForDelete);
+
+
+        transaction4.commit();
+        session4.close();
+
+
+        // ----------  5-ая сессия - для добавления новых 100000 doc: ----------------------
+
+
+        // Вставляем еще 100,000 записей через generate_series
+        docService.insertDocsWithGenerateSeries(dir.getId());
+        System.out.println("======================");
+
+
+
+
+
 
         // можно, конечно, переиспользовать поля класса - session, transaction - для новых сессии и транзакции,
         // но хочется для наглядности ввести session3, transaction2 - новые локальные имена внутри метода, чтобы видно было
@@ -148,10 +222,6 @@ public class HiberTest_1_3_sessions_in_1_test {
 
 
     }
-
-
-
-
 
 
 // ------------------------------------------------------
