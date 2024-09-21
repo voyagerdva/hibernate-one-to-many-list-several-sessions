@@ -6,28 +6,27 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 import org.junit.jupiter.api.*;
 
 
-public class HiberTest_1_3_sessions_in_1_test {
+public class HiberTest_2_serv_and_repo {
+
     private static SessionFactory sessionFactory;
-    private Session session;
-    private Transaction transaction;
+    private static Session session;
+    private static Transaction transaction;
+
+    public static DocService docService = new DocService();
 
     @BeforeAll
     static void setUpAll() {
-        Configuration configuration = new Configuration().configure();
-        configuration.addAnnotatedClass(Doc.class);
-        configuration.addAnnotatedClass(Dir.class);
-
-        sessionFactory = configuration.buildSessionFactory();
+        sessionFactory = docService.docRepository.getSessionFactory();
     }
 
     @BeforeEach
     void setUp() {
-        session = sessionFactory.openSession();
-        transaction = session.beginTransaction();
+        session = docService.docRepository.getSession();
+        transaction = docService.docRepository.getTransaction();
+
         truncateTables();
     }
 
@@ -54,7 +53,7 @@ public class HiberTest_1_3_sessions_in_1_test {
         transaction.commit();
 
         if (session != null) {
-            session.close();
+            docService.docRepository.sessionClose();
         }
     }
 
@@ -80,72 +79,15 @@ public class HiberTest_1_3_sessions_in_1_test {
 // ------------------------------------------------------------
 
     @Test
-    void test_add_2docs_save_get_update() {
+    void test_add_100000docs_save_get_update_with_Service_and_Repository() {
+
+        docService = new DocService();
 
         Dir dir = new Dir();
+        docService.docRepository.getSession().save(dir);
 
-        for (int i = 0; i < 10; i++) {
-            Doc doc = new Doc("city");
-            dir.addDocToItem(doc);
-        }
-
-        session.save(dir); // сейвы для doc1-2 нужны только если НЕ выставлен cascade=ALL. Если выставлен, то можно без них
-        transaction.commit();
-        session.close();
-
-        // ---------- 2-ая сессия - для вычитывания: ----------------------
-        Session session2 = sessionFactory.openSession();
-        Transaction transaction2 = session2.beginTransaction();
-
-        Dir dir2 = session2.get(Dir.class, dir.getId());
-        System.out.println(dir2);
-        System.out.println(dir2.getDocs());
-        transaction2.commit();
-        session2.close();
-
-        // ----------  3-ая сессия - для апдейта: ----------------------
-        Session session3 = sessionFactory.openSession();
-        Transaction transaction3 = session3.beginTransaction();
-
-        Dir dir3 = session3.get(Dir.class, dir2.getId());
-        System.out.println(dir3.getDocs());
-        Doc oldDoc = dir3.getDocs().get(7);
-
-
-        for (Doc doc : dir3.getDocs()) {
-            if (doc == oldDoc) {
-                oldDoc.setTitle("Street");
-                doc = oldDoc;
-
-            }
-        }
-
-        session3.update(dir3);
-
-
-        transaction3.commit();
-        session3.close();
-
-
-        // можно, конечно, переиспользовать поля класса - session, transaction - для новых сессии и транзакции,
-        // но хочется для наглядности ввести session3, transaction2 - новые локальные имена внутри метода, чтобы видно было
-        // как перекидывается контекст между одной и второй сессиями, транзакциями и кто в какой момент
-        // еще открыт, кто где требует закрытия и т.д.
-
-
-    }
-
-
-    @Test
-    void test_add_100000docs_save_get_update() {
-
-        DocService docService = new DocService();
-
-        Dir dir = new Dir();
-        session.save(dir);
-
-        transaction.commit();
-        session.close();
+        docService.docRepository.transactionCommit();
+        docService.docRepository.sessionClose();
 
         // Вставляем 100,000 записей через generate_series
         docService.insertDocsWithGenerateSeries(dir.getId());
@@ -205,8 +147,13 @@ public class HiberTest_1_3_sessions_in_1_test {
 
         // ----------  5-ая сессия - для добавления новых 100000 doc: ----------------------
 
-        // Вставляем 100,000 записей через generate_series
+
+        // Вставляем еще 100,000 записей через generate_series
         docService.insertDocsWithGenerateSeries(dir.getId());
+        System.out.println("======================");
+
+
+
 
 
 
