@@ -15,7 +15,7 @@ public class HiberTest_2_serv_and_repo {
     private static Session session;
     private static Transaction transaction;
 
-    public static DocService docService = new DocService();
+    public static DocService1 docService = new DocService1();
 
     @BeforeAll
     static void setUpAll() {
@@ -81,7 +81,7 @@ public class HiberTest_2_serv_and_repo {
     @Test
     void test_add_100000docs_save_get_update_with_Service_and_Repository() {
 
-        docService = new DocService();
+        docService = new DocService1();
 
         Dir dir = new Dir();
         docService.docRepository.getSession().save(dir);
