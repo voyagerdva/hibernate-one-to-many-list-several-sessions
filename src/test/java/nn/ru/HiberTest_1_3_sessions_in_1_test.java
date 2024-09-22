@@ -139,7 +139,7 @@ public class HiberTest_1_3_sessions_in_1_test {
     @Test
     void test_add_100000docs_save_get_update() {
 
-        DocService docService = new DocService();
+        DocService docService = new DocService(sessionFactory);
 
         Dir dir = new Dir();
         session.save(dir);
