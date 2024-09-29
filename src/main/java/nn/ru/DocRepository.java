@@ -135,4 +135,12 @@ public class DocRepository {
     public Dir getEntity(Dir dir) {
         return getSession().get(Dir.class, dir.getId());
     }
+
+    public void updateEntity(Dir dir) {
+        getSession().update(dir);
+    }
+
+    public void deleteEntity(Doc doc) {
+        getSession().delete(doc);
+    }
 }

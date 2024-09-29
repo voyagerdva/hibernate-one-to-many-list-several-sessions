@@ -1,9 +1,7 @@
 package nn.ru;
 
 import nn.ru.entity.Dir;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import nn.ru.entity.Doc;
 
 public class DocService1 {
 
@@ -17,42 +15,10 @@ public class DocService1 {
         repository.createNewSessionFactory();
     }
 
-    public SessionFactory getSessionFactory() {
-        return repository.getSessionFactory();
-    }
-
-    public void createNewSession() {
-        repository.createNewSession();
-    }
-
-    public Session getSession() {
-        return repository.getSession();
-    }
-
-    public void sessionClose() {
-        repository.sessionClose();
-    }
-
-    public void createNewTransaction() {
-        repository.createNewTransaction();
-    }
-
-    public Transaction getTransaction() {
-        return repository.getTransaction();
-    }
-
-    public void transactionCommit() {
-        repository.transactionCommit();
-    }
-
-
     public void saveWithCommitAndClose(Dir dir) {
         repository.sessionSave(dir);
     }
 
-    public void sessionFactoryClose() {
-        repository.sessionFactoryClose();
-    }
 
     public void cleanUp() {
         repository.truncateTables();
@@ -72,13 +38,26 @@ public class DocService1 {
     }
 
     public void switchOffAfterAll() {
-        if (getSessionFactory() != null) {
-            sessionFactoryClose();
+        if (repository.getSessionFactory() != null) {
+            repository.sessionFactoryClose();
         }
 
     }
 
     public Dir getEntity(Dir dir) {
         return repository.getEntity(dir);
+    }
+
+    public void updateEntity(Dir dir) {
+        repository.updateEntity(dir);
+    }
+
+    public void commitAndClose() {
+        repository.transactionCommit();
+        repository.sessionClose();
+    }
+
+    public void deleteEntity(Doc doc) {
+        repository.deleteEntity(doc);
     }
 }
