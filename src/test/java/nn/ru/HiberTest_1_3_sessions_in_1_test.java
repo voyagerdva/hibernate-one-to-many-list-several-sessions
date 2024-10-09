@@ -28,35 +28,10 @@ public class HiberTest_1_3_sessions_in_1_test {
     void setUp() {
         session = sessionFactory.openSession();
         transaction = session.beginTransaction();
+        System.out.println();
         truncateTables();
     }
 
-
-    @AfterEach
-    void tearDown() {
-
-        if (session != null && transaction != null) { // так таботает
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
-        }
-
-//        if (session.getSessionFactory().isClosed()) { // так не работает
-//            session = sessionFactory.openSession();
-//            transaction = session.beginTransaction();
-//        }
-
-        if (transaction != null) {
-            transaction.commit();
-        }
-
-        Transaction transaction = session.beginTransaction();
-        truncateTables();
-        transaction.commit();
-
-        if (session != null) {
-            session.close();
-        }
-    }
 
 
     // Очистка таблиц
@@ -143,9 +118,11 @@ public class HiberTest_1_3_sessions_in_1_test {
 
         Dir dir = new Dir();
         session.save(dir);
+        System.out.println();
 
         transaction.commit();
         session.close();
+        System.out.println();
 
         // Вставляем 100,000 записей через generate_series
         docService.insertDocsWithGenerateSeries(dir.getId());
@@ -155,6 +132,7 @@ public class HiberTest_1_3_sessions_in_1_test {
         Transaction transaction2 = session2.beginTransaction();
 
         Dir dir2 = session2.get(Dir.class, dir.getId());
+        System.out.println(dir2.getId());
         System.out.println(dir2.getDocs().get(99997));
         transaction2.commit();
         session2.close();
@@ -164,7 +142,7 @@ public class HiberTest_1_3_sessions_in_1_test {
         Transaction transaction3 = session3.beginTransaction();
 
         Dir dir3 = session3.get(Dir.class, dir2.getId());
-        System.out.println();
+        System.out.println(dir3.getId());
         Doc oldDoc = dir3.getDocs().get(99997);
         System.out.println();
 
@@ -220,6 +198,33 @@ public class HiberTest_1_3_sessions_in_1_test {
 
 
 // ------------------------------------------------------
+
+    @AfterEach
+    void tearDown() {
+
+        if (session != null && transaction != null) { // так таботает
+            session = sessionFactory.openSession();
+            transaction = session.beginTransaction();
+        }
+
+//        if (session.getSessionFactory().isClosed()) { // так не работает
+//            session = sessionFactory.openSession();
+//            transaction = session.beginTransaction();
+//        }
+
+        if (transaction != null) {
+            transaction.commit();
+        }
+
+        Transaction transaction = session.beginTransaction();
+        truncateTables();
+        transaction.commit();
+
+        if (session != null) {
+            session.close();
+        }
+    }
+
 
     // Выполняется один раз после всех тестов для закрытия фабрики сессий
     @AfterAll

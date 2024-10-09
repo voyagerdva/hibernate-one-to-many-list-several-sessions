@@ -21,7 +21,7 @@ public class Dir {
 
     // прямая Dir-Docs
     @OneToMany(cascade = CascadeType.ALL
-            , fetch = FetchType.LAZY
+            , fetch = FetchType.EAGER
     )
     @JoinColumn(name = "dir_id")
     private List<Doc> docs;
