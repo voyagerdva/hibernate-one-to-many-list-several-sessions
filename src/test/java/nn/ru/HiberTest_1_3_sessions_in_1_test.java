@@ -6,7 +6,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.query.Query;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.*;
 
 
@@ -128,11 +130,24 @@ public class HiberTest_1_3_sessions_in_1_test {
         docService.insertDocsWithGenerateSeries(dir.getId());
 
         // ---------- 2-ая сессия - для вычитывания: ----------------------
+
+        SessionFactoryImplementor sessionFactoryImpl = (SessionFactoryImplementor) sessionFactory;
+        Statistics stats = sessionFactoryImpl.getStatistics();
+
+
+        stats.setStatisticsEnabled(true);
+
+
         Session session2 = sessionFactory.openSession();
         Transaction transaction2 = session2.beginTransaction();
 
-        Dir dir2 = session2.get(Dir.class, dir.getId());
+        Dir dir2 = session2.get(Dir.class, 1L);
         System.out.println(dir2.getId());
+
+        // Hibernate.isInitialized(dir2.getDocs())
+
+
+
         System.out.println(dir2.getDocs().get(99997));
         transaction2.commit();
         session2.close();
